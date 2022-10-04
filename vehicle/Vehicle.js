@@ -1,23 +1,19 @@
 const mongoose = require('mongoose');
-const bookSchema = mongoose.Schema({
-  title: {
-     type: String,
-     require: true
-   },
-   author: {
-      type: String,
-      require: true
-   },
-   numberPages: {
-       type: Number,
-       require: false
-   },
-   publisher: {
-       type: String,
-       require: false
-   }
+const vehicleSchema = mongoose.Schema({
+  vehicleRegistrationNumber: {
+    type: String,
+    require: true
+  },
+  registeredDate: {
+    type: String,
+    require: true
+  },
+  chassisNumber: {
+    type: Number,
+    require: false
+  }
 })
 
-const Book = mongoose.model("book", bookSchema);
+const Vehicle = mongoose.model("vehicle", vehicleSchema);
 
-module.exports = Book;
+module.exports = Vehicle;
