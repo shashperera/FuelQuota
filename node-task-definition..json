@@ -5,7 +5,7 @@
   "containerDefinitions": [
     {
       "name": "nodejs-app",
-      "image": "xxxxx.dkr.ecr.us-east-1.amazonaws.com/docker-on-aws/nodejs:latest",
+      "image": "540559473508.dkr.ecr.us-east-1.amazonaws.com/fuelquota:latest",
       "portMappings": [
         {
           "containerPort": 80,

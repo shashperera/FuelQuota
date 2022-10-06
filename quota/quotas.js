@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const QR = require("qrcode");
 const User = require("../auth/Auth");
+const Vehicle = require("../vehicle/Vehicle");
 const ConnectedDevice = require("../quota/connectedDevice");
 
 // Connect
@@ -36,15 +37,13 @@ app.get('/quotas', (req, res) => {
     if (orders) {
       res.json(orders)
     } else {
-      res.status(404).send('Orders not found');
+      res.status(404).send('Quota not found');
     }
   }).catch((err) => {
     res.status(500).send('Internal Server Error!');
   });
 })
-
-
-app.post("/quota/generate", async (req, res) => {
+app.post("/quota/update", async (req, res) => {
   try {
     const { userId } = req.body;
 
@@ -64,15 +63,93 @@ app.post("/quota/generate", async (req, res) => {
 
     // If qr exist, update disable to true and then create a new qr record
     if (!qrExist) {
-      await Quota.create({ userId });
+      await Quota.updateOne({ userId });
     } else {
       await Quota.findOneAndUpdate({ userId }, { $set: { disabled: true } });
       await Quota.create({ userId });
     }
 
+    // Return qr code
+    return res.status(200).json({ dataImage });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// app.post("/quota/generate", async (req, res) => {
+//   try {
+//     const { userId } = req.body;
+//
+//     // Validate user input
+//     if (!userId) {
+//       res.status(400).send("User Id is required");
+//     }
+//
+//     const user = await User.findById(userId);
+//
+//     // Validate is user exist
+//     if (!user) {
+//       res.status(400).send("User not found");
+//     }
+//
+//     const qrExist = await Quota.findOne({ userId });
+//
+//     // If qr exist, update disable to true and then create a new qr record
+//     if (!qrExist) {
+//       await Quota.create({ userId });
+//     } else {
+//       await Quota.findOneAndUpdate({ userId }, { $set: { disabled: true } });
+//       await Quota.create({ userId });
+//     }
+//
+//     // Generate encrypted data
+//     const encryptedData = jwt.sign(
+//         { userId: user._id },
+//         process.env.TOKEN_KEY,
+//         {
+//           expiresIn: "1d",
+//         }
+//     );
+//
+//     // Generate qr code
+//     const dataImage = await QR.toDataURL(encryptedData);
+//
+//     // Return qr code
+//     return res.status(200).json({ dataImage });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+
+app.post("/quotaV/generate", async (req, res) => {
+  try {
+    const { vehicleID } = req.body;
+
+    // Validate user input
+    if (!vehicleID) {
+      res.status(400).send("Vehicle Id is required");
+    }
+
+    const vehicle = await Vehicle.findById(vehicleID);
+
+    // Validate is user exist
+    if (!vehicle) {
+      res.status(400).send("User not found");
+    }
+
+    const qrExist = await Quota.findOne({ vehicleID });
+
+    // If qr exist, update disable to true and then create a new qr record
+    if (!qrExist) {
+      await Quota.create({ vehicleID });
+    } else {
+      await Quota.findOneAndUpdate({ vehicleID }, { $set: { disabled: true } });
+      await Quota.create({ vehicleID });
+    }
+
     // Generate encrypted data
     const encryptedData = jwt.sign(
-        { userId: user._id },
+        { vehicleID: vehicle._id },
         process.env.TOKEN_KEY,
         {
           expiresIn: "1d",
@@ -88,6 +165,7 @@ app.post("/quota/generate", async (req, res) => {
     console.log(err);
   }
 });
+
 
 app.post("/quota/scan", async (req, res) => {
   try {
@@ -143,6 +221,7 @@ app.post("/quota/scan", async (req, res) => {
     console.log(err);
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Up and Running on port ${port} - This is Quota service`);

@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const vehicleSchema = mongoose.Schema({
   vehicleRegistrationNumber: {
     type: String,
-    require: true
+    require: true,
+    unique: true
   },
   registeredDate: {
     type: String,

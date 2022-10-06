@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const {Schema} = require("mongoose");
 
 const quotaSchema = mongoose.Schema({
-  userId: {
+  vehicleID: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "users",
+    ref: "vehicles",
   },
   connectedDeviceId: {
     type: Schema.Types.ObjectId,
