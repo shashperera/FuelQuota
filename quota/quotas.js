@@ -18,19 +18,6 @@ const app = express();
 const port = 9000;
 app.use(express.json())
 
-app.post('/quota', (req, res) => {
-  const newQuota = new Quota({
-    customerID: mongoose.Types.ObjectId(req.body.customerID),
-    bookID: mongoose.Types.ObjectId(req.body.bookID),
-    initialDate: req.body.initialDate,
-    deliveryDate: req.body.deliveryDate
-  });
-  newQuota.save().then(() => {
-    res.send('New Order created successfully!')
-  }).catch((err) => {
-    res.status(500).send('Internal Server Error!');
-  })
-})
 
 app.get('/quotas', (req, res) => {
   Quota.find().then((orders) => {
@@ -43,87 +30,10 @@ app.get('/quotas', (req, res) => {
     res.status(500).send('Internal Server Error!');
   });
 })
-app.post("/quota/update", async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    // Validate user input
-    if (!userId) {
-      res.status(400).send("User Id is required");
-    }
-
-    const user = await User.findById(userId);
-
-    // Validate is user exist
-    if (!user) {
-      res.status(400).send("User not found");
-    }
-
-    const qrExist = await Quota.findOne({ userId });
-
-    // If qr exist, update disable to true and then create a new qr record
-    if (!qrExist) {
-      await Quota.updateOne({ userId });
-    } else {
-      await Quota.findOneAndUpdate({ userId }, { $set: { disabled: true } });
-      await Quota.create({ userId });
-    }
-
-    // Return qr code
-    return res.status(200).json({ dataImage });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// app.post("/quota/generate", async (req, res) => {
-//   try {
-//     const { userId } = req.body;
-//
-//     // Validate user input
-//     if (!userId) {
-//       res.status(400).send("User Id is required");
-//     }
-//
-//     const user = await User.findById(userId);
-//
-//     // Validate is user exist
-//     if (!user) {
-//       res.status(400).send("User not found");
-//     }
-//
-//     const qrExist = await Quota.findOne({ userId });
-//
-//     // If qr exist, update disable to true and then create a new qr record
-//     if (!qrExist) {
-//       await Quota.create({ userId });
-//     } else {
-//       await Quota.findOneAndUpdate({ userId }, { $set: { disabled: true } });
-//       await Quota.create({ userId });
-//     }
-//
-//     // Generate encrypted data
-//     const encryptedData = jwt.sign(
-//         { userId: user._id },
-//         process.env.TOKEN_KEY,
-//         {
-//           expiresIn: "1d",
-//         }
-//     );
-//
-//     // Generate qr code
-//     const dataImage = await QR.toDataURL(encryptedData);
-//
-//     // Return qr code
-//     return res.status(200).json({ dataImage });
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
 
 app.post("/quotaV/generate", async (req, res) => {
   try {
-    const { vehicleID } = req.body;
+    const { vehicleID,maxQuota,usedQuota,remainingQuota } = req.body;
 
     // Validate user input
     if (!vehicleID) {
@@ -141,10 +51,10 @@ app.post("/quotaV/generate", async (req, res) => {
 
     // If qr exist, update disable to true and then create a new qr record
     if (!qrExist) {
-      await Quota.create({ vehicleID });
+      await Quota.create({ vehicleID, maxQuota,usedQuota,remainingQuota });
     } else {
       await Quota.findOneAndUpdate({ vehicleID }, { $set: { disabled: true } });
-      await Quota.create({ vehicleID });
+      await Quota.create({ vehicleID, maxQuota,usedQuota,remainingQuota });
     }
 
     // Generate encrypted data
@@ -165,6 +75,37 @@ app.post("/quotaV/generate", async (req, res) => {
     console.log(err);
   }
 });
+
+
+app.put("/quota/update", async (req, res) => {
+  try {
+    const { vehicleID, remainingQuota,maxQuota,usedQuota } = req.body;
+
+    // Validate user input
+    if (!vehicleID) {
+      res.status(400).send("Vehicle Id is required");
+    }
+    // const usedQuota = 50;
+    const vehicle = await Vehicle.findById(vehicleID);
+
+    // Validate is user exist
+    if (!vehicle) {
+      res.status(400).send("User not found");
+    }
+
+    // If qr exist, update disable to true and then create a new qr record
+    // if (!vehicle) {
+    //   await Quota.create({ vehicleID });
+    // } else {
+      // Update quota
+    await Quota.update({ vehicleID,maxQuota, usedQuota, remainingQuota: remainingQuota - usedQuota });
+    // }
+
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 
 
 app.post("/quota/scan", async (req, res) => {

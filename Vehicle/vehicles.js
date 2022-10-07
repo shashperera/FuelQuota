@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require('express');
-
+const AWS = require('aws-sdk');
+const config = require('./config');
+const uuidv1 = require('uuid');
 // Connect
 require('../db/db');
 
@@ -104,6 +106,65 @@ app.delete('/vehicle/:id', (req, res) => {
 
 
 
+
+const getVehicles = function (req, res) {
+  AWS.config.update(config.aws_remote_config);
+
+  const docClient = new AWS.DynamoDB.DocumentClient();
+
+  const params = {
+    TableName: config.aws_table_name
+  };
+
+  docClient.scan(params, function (err, data) {
+
+    if (err) {
+      console.log(err)
+      res.send({
+        success: false,
+        message: err
+      });
+    } else {
+      const { Items } = data;
+      res.send({
+        success: true,
+        vehicles: Items
+      });
+    }
+  });
+}
+
+const vregister = function (req, res) {
+  AWS.config.update(config.aws_remote_config);
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  const Item = { ...req.body };
+  Item.id = uuidv1();
+  var params = {
+    TableName: config.aws_table_name,
+    Item: Item
+  };
+
+  // Call DynamoDB to add the item to the table
+  docClient.put(params, function (err, data) {
+    if (err) {
+      res.send({
+        success: false,
+        message: err
+      });
+    } else {
+      res.send({
+        success: true,
+        message: 'Added vehicle',
+        vehicle: data
+      });
+    }
+  });
+}
+
+module.exports = {
+  getVehicles,
+  vregister
+}
 
 app.listen(port, () => {
   console.log(`Up and Running on port ${port} - This is Vehicle service`);
