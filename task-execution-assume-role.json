@@ -1,8 +1,10 @@
+//AWS Identity and Access Management (IAM) policy document
 "Version" : "2022-10-04",
 "Statement": [
 {
 "Sid": "",
 "Effect": "Allow",
+// Identifies the entity that is allowed or denied access
 "Principal": {
 "Service": "ecs-tasks.amazonaws.com"
 },
