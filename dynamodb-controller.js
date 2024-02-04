@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const config = require('./../../config.js');
 const uuidv1 = require('uuid/v1');
 
+//Initiates a scan operation to retrieve all items from a specified DynamoDB table. Sends a response with the retrieved vehicles or an error message.
 const getVehicles = function (req, res) {
     AWS.config.update(config.aws_remote_config);
 
@@ -29,11 +30,12 @@ const getVehicles = function (req, res) {
     });
 }
 
+//Vehicle registration/add
 const vregister = function (req, res) {
     AWS.config.update(config.aws_remote_config);
     const docClient = new AWS.DynamoDB.DocumentClient();
     const Item = { ...req.body };
-    Item.id = uuidv1();
+    Item.id = uuidv1(); //generate a unique identifier for the new item
     var params = {
         TableName: config.aws_table_name,
         Item: Item
