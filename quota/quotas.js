@@ -139,6 +139,8 @@ app.post("/quota/scan", async (req, res) => {
     const connectedDevice = await ConnectedDevice.create(connectedDeviceData);
 
     // Update qr code
+    // await to signal JavaScript to wait for the promise returned by findOneAndUpdate to either resolve (indicating a successful update) 
+    // or reject (indicating an error).
     await Quota.findOneAndUpdate(
         { _id: qrCode._id },
         {
