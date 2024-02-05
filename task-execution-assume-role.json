@@ -1,21 +1,16 @@
 {
-  //AWS Identity and Access Management (IAM) policy document
-  // Version of the policy language
   "Version": "2022-10-04",
   
-  //Array of policy statements,set of permissions
   "Statement": [
     {
       "Sid": "",
 
       "Effect": "Allow",
       
-      // Identifies the entity that is allowed or denied access
       "Principal": {
         "Service": "ecs-tasks.amazonaws.com"
       },
       
-      // Specifies the action that are allowed or denied
       "Action": "sts:AssumeRole"
     }
   ]
